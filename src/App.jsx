@@ -14,17 +14,44 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const sendLineNotification = async (lineUserId, orderNumber, status, orderTotal) => {
-  if (!lineUserId) return;
+  if (!lineUserId) {
+    console.log('⚠️ No LINE User ID - skipping notification');
+    return false;
+  }
+  
+  if (!LINE_API_URL) {
+    console.error('❌ LINE_API_URL not configured');
+    alert('ไม่สามารถส่งแจ้งเตือนได้: ยังไม่ได้ตั้งค่า LINE API URL');
+    return false;
+  }
+
   try {
+    console.log('📤 Sending notification:', { lineUserId, orderNumber, status, orderTotal });
+    
     const response = await fetch(LINE_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lineUserId, orderNumber, status, orderTotal }),
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        lineUserId, 
+        orderNumber, 
+        status, 
+        orderTotal 
+      }),
     });
-    if (!response.ok) throw new Error('Failed to send notification');
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      console.error('❌ API Error:', result);
+      throw new Error(result.error || 'Failed to send notification');
+    }
+
+    console.log('✅ Notification sent successfully:', result);
     return true;
   } catch (error) {
-    console.error('Error sending LINE notification:', error);
+    console.error('❌ Error sending LINE notification:', error);
     return false;
   }
 };
