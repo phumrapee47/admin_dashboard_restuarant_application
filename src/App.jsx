@@ -1484,7 +1484,7 @@ const DashboardPage = ({ orders, pendingOrders, acceptedOrders, todayRevenue, to
   );
 };
 
-const OrdersPage = ({ orders, loadOrders }) => {
+ const OrdersPage = ({ orders, loadOrders }) => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
@@ -1492,6 +1492,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const order = orders.find(o => o.id === orderId);
+      
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
@@ -1499,15 +1500,21 @@ const OrdersPage = ({ orders, loadOrders }) => {
 
       if (error) throw error;
 
-      if (order?.line_user_id) {
-        await sendLineNotification(order.line_user_id, orderId, newStatus, order.total);
-        alert('อัพเดตสถานะและส่งแจ้งเตือนไปยัง LINE สำเร็จ ✅');
+      if (order && order.line_user_id) {
+        await sendLineNotification(
+          order.line_user_id,
+          orderId,
+          newStatus,
+          order.total
+        );
+        alert('อัพเดตสถานะและส่งแจ้งเตือนไปยัง LINE สำเร็จ');
       } else {
         alert('อัพเดตสถานะสำเร็จ');
       }
       loadOrders();
     } catch (error) {
-      alert(`❌ เกิดข้อผิดพลาด: ${error.message}`);
+      console.error('Error updating order:', error);
+      alert(`เกิดข้อผิดพลาด: ${error.message}`);
     }
   };
 
@@ -1519,7 +1526,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">จัดการออเดอร์</h2>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2">
           {['all', 'pending', 'accepted', 'preparing', 'ready', 'rejected'].map(status => (
             <button
               key={status}
@@ -1547,15 +1554,85 @@ const OrdersPage = ({ orders, loadOrders }) => {
           </div>
         ) : (
           filteredOrders.map(order => (
-            <div key={order.id} className="bg-white rounded-xl shadow-md p-6">
+            <div
+              key={order.id}
+              className={`bg-white rounded-xl shadow-md p-6 ${
+                order.status === 'pending' ? 'border-l-4 border-yellow-500' :
+                order.status === 'accepted' ? 'border-l-4 border-green-500' :
+                order.status === 'preparing' ? 'border-l-4 border-blue-500' :
+                order.status === 'ready' ? 'border-l-4 border-purple-500' :
+                'border-l-4 border-red-500'
+              }`}
+            >
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="font-bold text-lg text-gray-800">ออเดอร์ #{order.id}</h3>
-                  <p className="text-sm text-gray-500">{new Date(order.created_at).toLocaleString('th-TH')}</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(order.created_at).toLocaleString('th-TH')}
+                  </p>
                   {order.customer_phone && (
                     <p className="text-sm text-blue-600 mt-1">📞 {order.customer_phone}</p>
                   )}
+                  {order.line_user_id && (
+                    <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                      <Bell size={14} />
+                      เชื่อมต่อ LINE แล้ว
+                    </p>
+                  )}
                 </div>
+                <div className={`px-4 py-2 rounded-full font-medium ${
+                  order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                  order.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                  order.status === 'preparing' ? 'bg-blue-100 text-blue-700' :
+                  order.status === 'ready' ? 'bg-purple-100 text-purple-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {order.status === 'pending' ? '🔔 รอดำเนินการ' :
+                   order.status === 'accepted' ? '✅ ยืนยันแล้ว' :
+                   order.status === 'preparing' ? '👨‍🍳 กำลังเตรียม' :
+                   order.status === 'ready' ? '🎉 พร้อมแล้ว' : '❌ ปฏิเสธ'}
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-4">
+                {order.items && order.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <span className="flex-1">
+                      {item.name} x {item.quantity}
+                      {item.itemNote && (
+                        <span className="block text-xs text-gray-500 italic mt-1">
+                          หมายเหตุ: {item.itemNote}
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-medium text-orange-600">{item.price * item.quantity}฿</span>
+                  </div>
+                ))}
+              </div>
+
+              {order.note && (
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 rounded">
+                  <p className="text-sm font-medium text-blue-900">หมายเหตุ:</p>
+                  <p className="text-blue-800">{order.note}</p>
+                </div>
+              )}
+
+              {order.slip_url && (
+                <div className="mb-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">สลิปการชำระเงิน:</p>
+                  <img 
+                    src={order.slip_url} 
+                    alt="สลิป" 
+                    className="max-w-xs rounded-lg shadow-md cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => window.open(order.slip_url, '_blank')}
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-between items-center pt-4 border-t">
+                <p className="text-xl font-bold text-gray-800">
+                  ยอดรวม: <span className="text-orange-600">{order.total}฿</span>
+                </p>
                 <button
                   onClick={() => {
                     setSelectedOrder(order);
@@ -1567,19 +1644,6 @@ const OrdersPage = ({ orders, loadOrders }) => {
                   อัพเดตสถานะ
                 </button>
               </div>
-
-              <div className="space-y-2 mb-4">
-                {order.items?.map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-gray-700 bg-gray-50 p-3 rounded-lg">
-                    <span>{item.name} x {item.quantity}</span>
-                    <span className="font-medium text-orange-600">{item.price * item.quantity}฿</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t pt-4">
-                <p className="text-xl font-bold text-gray-800">ยอดรวม: <span className="text-orange-600">{order.total}฿</span></p>
-              </div>
             </div>
           ))
         )}
@@ -1588,49 +1652,75 @@ const OrdersPage = ({ orders, loadOrders }) => {
       {showStatusModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">อัพเดตสถานะออเดอร์ #{selectedOrder.id}</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">อัพเดตสถานะออเดอร์ #{selectedOrder.id}</h2>
+              <button 
+                onClick={() => {
+                  setShowStatusModal(false);
+                  setSelectedOrder(null);
+                }}
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                {selectedOrder.line_user_id ? (
+                  <span className="flex items-center gap-2 text-green-600">
+                    <Bell size={16} />
+                    ลูกค้าจะได้รับแจ้งเตือนผ่าน LINE
+                  </span>
+                ) : (
+                  <span className="text-orange-600">
+                    ⚠️ ลูกค้าไม่ได้เชื่อมต่อ LINE (ไม่มีการแจ้งเตือน)
+                  </span>
+                )}
+              </p>
+            </div>
+
             <div className="space-y-3">
               <button
                 onClick={() => {
                   updateOrderStatus(selectedOrder.id, 'accepted');
                   setShowStatusModal(false);
                 }}
-                className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium"
+                className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
               >
+                <CheckCircle size={20} />
                 ยืนยันออเดอร์
               </button>
+
               <button
                 onClick={() => {
                   updateOrderStatus(selectedOrder.id, 'preparing');
                   setShowStatusModal(false);
                 }}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
               >
-                กำลังเตรียมอาหาร
+                👨‍🍳 กำลังเตรียมอาหาร
               </button>
+
               <button
                 onClick={() => {
                   updateOrderStatus(selectedOrder.id, 'ready');
                   setShowStatusModal(false);
                 }}
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-medium"
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
               >
-                พร้อมส่ง/รับได้แล้ว
+                🎉 พร้อมส่ง/รับได้แล้ว
               </button>
+
               <button
                 onClick={() => {
                   updateOrderStatus(selectedOrder.id, 'rejected');
                   setShowStatusModal(false);
                 }}
-                className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium"
+                className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
               >
+                <XCircle size={20} />
                 ปฏิเสธออเดอร์
-              </button>
-              <button
-                onClick={() => setShowStatusModal(false)}
-                className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 rounded-lg font-medium"
-              >
-                ยกเลิก
               </button>
             </div>
           </div>
