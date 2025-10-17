@@ -41,17 +41,27 @@ const sendLineNotification = async (lineUserId, orderNumber, status, orderTotal)
       }),
     });
 
-    const result = await response.json();
-    
     if (!response.ok) {
-      console.error('❌ API Error:', result);
-      throw new Error(result.error || 'Failed to send notification');
+      const errorText = await response.text();
+      console.error('❌ API Error Response:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
+    const result = await response.json();
     console.log('✅ Notification sent successfully:', result);
     return true;
+    
   } catch (error) {
     console.error('❌ Error sending LINE notification:', error);
+    
+    // แสดงข้อความที่เข้าใจง่ายขึ้น
+    if (error.message.includes('CORS')) {
+      alert('❌ ข้อผิดพลาด: ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้\n(CORS policy error)');
+    } else if (error.message.includes('Failed to fetch')) {
+      alert('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+    } else {
+      alert(`❌ เกิดข้อผิดพลาด: ${error.message}`);
+    }
     return false;
   }
 };
@@ -719,7 +729,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
                 )}
               </p>
             </div>
-
+                    {/* preparing */}
             <div className="space-y-3">
               <button
                 onClick={() => {
