@@ -815,16 +815,6 @@ const OrdersPage = ({ orders, loadOrders }) => {
 
               <button
                 onClick={() => {
-                  updateOrderStatus(selectedOrder.id, 'preparing');
-                  setShowStatusModal(false);
-                }}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
-              >
-                👨‍🍳 กำลังเตรียมอาหาร
-              </button>
-
-              <button
-                onClick={() => {
                   updateOrderStatus(selectedOrder.id, 'ready');
                   setShowStatusModal(false);
                 }}
