@@ -572,31 +572,71 @@ const OrdersPage = ({ orders, loadOrders }) => {
     }
   };
 
-  const filteredOrders = filterStatus === 'all' 
-    ? orders 
-    : orders.filter(o => o.status === filterStatus);
+  const [filterPayment, setFilterPayment] = useState('all');
+
+  const filteredOrders = orders
+    .filter(o => filterStatus === 'all' || o.status === filterStatus)
+    .filter(o => filterPayment === 'all' || o.payment_method === filterPayment);
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">จัดการออเดอร์</h2>
-        <div className="flex gap-2">
-          {['all', 'pending', 'accepted', 'ready', 'rejected'].map(status => (
+        
+        <div className="flex flex-col gap-3">
+          {/* Status Filter */}
+          <div className="flex gap-2 flex-wrap justify-end">
+            {['all', 'pending', 'accepted', 'ready', 'rejected'].map(status => (
+              <button
+                key={status}
+                onClick={() => setFilterStatus(status)}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  filterStatus === status
+                    ? 'bg-orange-500 text-white shadow-md scale-105'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+                }`}
+              >
+                {status === 'all' ? '📋 ทั้งหมด' :
+                status === 'pending' ? '⏳ รอดำเนินการ' :
+                status === 'accepted' ? '✅ ยืนยันแล้ว' :
+                status === 'ready' ? '🎉 พร้อมแล้ว' : '❌ ปฏิเสธ'}
+              </button>
+            ))}
+          </div>
+
+          {/* Payment Method Filter */}
+          <div className="flex gap-2 flex-wrap justify-end">
             <button
-              key={status}
-              onClick={() => setFilterStatus(status)}
+              onClick={() => setFilterPayment('all')}
               className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                filterStatus === status
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
+                filterPayment === 'all'
+                  ? 'bg-purple-500 text-white shadow-md scale-105'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-300 hover:bg-purple-50'
               }`}
             >
-              {status === 'all' ? 'ทั้งหมด' :
-               status === 'pending' ? 'รอดำเนินการ' :
-               status === 'accepted' ? 'ยืนยันแล้ว' :
-               status === 'ready' ? 'พร้อมแล้ว' : 'ปฏิเสธ'}
+              💰 ทั้งหมด
             </button>
-          ))}
+            <button
+              onClick={() => setFilterPayment('online')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                filterPayment === 'online'
+                  ? 'bg-purple-500 text-white shadow-md scale-105'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+              }`}
+            >
+              💳 โอนแล้ว
+            </button>
+            <button
+              onClick={() => setFilterPayment('cash')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                filterPayment === 'cash'
+                  ? 'bg-purple-500 text-white shadow-md scale-105'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+              }`}
+            >
+              💵 หน้าร้าน
+            </button>
+          </div>
         </div>
       </div>
 
@@ -625,6 +665,16 @@ const OrdersPage = ({ orders, loadOrders }) => {
                   {order.customer_phone && (
                     <p className="text-sm text-blue-600 mt-1">📞 {order.customer_phone}</p>
                   )}
+
+                  {/* ⭐ เพิ่มส่วนนี้ */}
+                  <p className="text-sm mt-1 flex items-center gap-1">
+                    {order.payment_method === 'cash' ? (
+                      <span className="text-green-600 font-medium">💵 ชำระหน้าร้าน</span>
+                    ) : (
+                      <span className="text-blue-600 font-medium">💳 โอนเงินแล้ว</span>
+                    )}
+                  </p>
+
                   {order.line_user_id && (
                     <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
                       <Bell size={14} />
@@ -667,6 +717,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
                 </div>
               )}
 
+              {/* แก้จากเดิม */}
               {order.slip_url && (
                 <div className="mb-4">
                   <p className="text-sm font-medium text-gray-700 mb-2">สลิปการชำระเงิน:</p>
@@ -676,6 +727,26 @@ const OrdersPage = ({ orders, loadOrders }) => {
                     className="max-w-xs rounded-lg shadow-md cursor-pointer hover:scale-105 transition-transform"
                     onClick={() => window.open(order.slip_url, '_blank')}
                   />
+                </div>
+              )}
+
+              {/* เปลี่ยนเป็น */}
+              {order.payment_method === 'online' && order.slip_url && (
+                <div className="mb-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">สลิปการชำระเงิน:</p>
+                  <img 
+                    src={order.slip_url} 
+                    alt="สลิป" 
+                    className="max-w-xs rounded-lg shadow-md cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => window.open(order.slip_url, '_blank')}
+                  />
+                </div>
+              )}
+
+              {order.payment_method === 'cash' && (
+                <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded">
+                  <p className="text-sm font-medium text-yellow-900">⚠️ รอชำระเงินหน้าร้าน</p>
+                  <p className="text-xs text-yellow-700 mt-1">ลูกค้าจะจ่ายเงินสดตอนมารับของ</p>
                 </div>
               )}
 
