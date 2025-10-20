@@ -605,7 +605,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
           </div>
 
           {/* Payment Method Filter */}
-          <div className="flex gap-2 flex-wrap justify-end">
+          {/* <div className="flex gap-2 flex-wrap justify-end">
             <button
               onClick={() => setFilterPayment('all')}
               className={`px-4 py-2 rounded-lg font-medium transition-all ${
@@ -636,7 +636,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
             >
               💵 หน้าร้าน
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 
