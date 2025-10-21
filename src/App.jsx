@@ -26,11 +26,16 @@ const sendLineNotification = async (lineUserId, orderNumber, status, orderTotal)
   }
 
   try {
-    console.log('📤 Sending notification:', { lineUserId, orderNumber, status, orderTotal });
-    
+    console.log('📤 Sending notification payload:', {
+      lineUserId,
+      orderNumber,
+      status,
+      orderTotal,
+    });
+
     const response = await fetch(LINE_API_URL, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ 
@@ -53,15 +58,6 @@ const sendLineNotification = async (lineUserId, orderNumber, status, orderTotal)
     
   } catch (error) {
     console.error('❌ Error sending LINE notification:', error);
-    
-    // แสดงข้อความที่เข้าใจง่ายขึ้น
-    if (error.message.includes('CORS')) {
-      alert('❌ ข้อผิดพลาด: ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้\n(CORS policy error)');
-    } else if (error.message.includes('Failed to fetch')) {
-      alert('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
-    } else {
-      alert(`❌ เกิดข้อผิดพลาด: ${error.message}`);
-    }
     return false;
   }
 };
