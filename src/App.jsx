@@ -13,7 +13,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const sendLineNotification = async (lineUserId, orderitem, status, orderTotal) => {
+const sendLineNotification = async (lineUserId, orderNumber, status, orderTotal) => {
   if (!lineUserId) {
     console.log('⚠️ No LINE User ID - skipping notification');
     return false;
@@ -28,7 +28,7 @@ const sendLineNotification = async (lineUserId, orderitem, status, orderTotal) =
   try {
     console.log('📤 Sending notification payload:', {
       lineUserId,
-      orderitem,
+      orderNumber,
       status,
       orderTotal,
     });
@@ -40,7 +40,7 @@ const sendLineNotification = async (lineUserId, orderitem, status, orderTotal) =
       },
       body: JSON.stringify({ 
         lineUserId, 
-        orderitem, 
+        orderNumber, 
         status, 
         orderTotal 
       }),
@@ -552,7 +552,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
         
         await sendLineNotification(
           order.line_user_id,
-          order.items,
+          orderId,
           statusText,
           order.total
         );
