@@ -542,7 +542,6 @@ const OrdersPage = ({ orders, loadOrders }) => {
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const order = orders.find(o => o.id === orderId);
-      
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
@@ -716,20 +715,6 @@ const OrdersPage = ({ orders, loadOrders }) => {
                   <p className="text-blue-800">{order.note}</p>
                 </div>
               )}
-
-              {/* แก้จากเดิม */}
-              {order.slip_url && (
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">สลิปการชำระเงิน:</p>
-                  <img 
-                    src={order.slip_url} 
-                    alt="สลิป" 
-                    className="max-w-xs rounded-lg shadow-md cursor-pointer hover:scale-105 transition-transform"
-                    onClick={() => window.open(order.slip_url, '_blank')}
-                  />
-                </div>
-              )}
-
               {/* เปลี่ยนเป็น */}
               {order.payment_method === 'online' && order.slip_url && (
                 <div className="mb-4">
