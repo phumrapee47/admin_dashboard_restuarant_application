@@ -1072,13 +1072,13 @@ const MenuFormModal = ({ editingMenu, onClose, onSave, loading }) => {
       const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${safeName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("menu-images")
+        .from("menu_images")
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       const { data: publicUrlData } = supabase.storage
-        .from("menu-images")
+        .from("menu_images")
         .getPublicUrl(fileName);
 
       if (publicUrlData?.publicUrl) {
