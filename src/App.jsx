@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Store, CheckCircle, XCircle, Clock, Plus, Edit2, Trash2, TrendingUp, DollarSign, LogOut, Eye, EyeOff, Bell, ShoppingBag, Home, UtensilsCrossed } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import bcrypt from 'bcryptjs'; // ติดตั้งก่อน: npm install bcryptjs
+
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -102,12 +104,41 @@ const AdminDashboard = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginError('');
-    if (username === 'admin' && password === 'admin123') {
+
+    try {
+      // ดึงข้อมูลผู้ใช้จาก Supabase ตาม username
+      const { data: users, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('username', username)
+        .limit(1)
+        .single();
+
+      if (error || !users) {
+        setLoginError('ไม่พบบัญชีผู้ใช้นี้');
+        return;
+      }
+
+      // ตรวจสอบรหัสผ่านด้วย bcrypt
+      const isPasswordValid = await bcrypt.compare(password, users.password_hash);
+
+      if (!isPasswordValid) {
+        setLoginError('รหัสผ่านไม่ถูกต้อง');
+        return;
+      }
+
+      // ✅ เข้าสู่ระบบสำเร็จ
       setIsAuthenticated(true);
-    } else {
-      setLoginError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+      setUsername(users.username);
+      setPassword('');
+      setLoginError('');
+
+    } catch (err) {
+      console.error('Login Error:', err);
+      setLoginError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
     }
   };
+
 
   const handleLogout = () => {
     setIsAuthenticated(false);
@@ -269,12 +300,6 @@ const AdminDashboard = () => {
             >
               เข้าสู่ระบบ
             </button>
-
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-800">
-              <p className="font-medium mb-1">ข้อมูลทดสอบ:</p>
-              <p>Username: <strong>admin</strong></p>
-              <p>Password: <strong>admin123</strong></p>
-            </div>
           </div>
         </div>
       </div>

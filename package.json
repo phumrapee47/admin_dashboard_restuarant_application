@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "lucide-react": "^0.545.0",
     "react": "^19.1.1",
