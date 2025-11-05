@@ -720,7 +720,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
                     <span className="flex-1">
                       {item.name} x {item.quantity}
                       {item.itemNote && (
-                        <span className="block text-xs text-gray-500 italic mt-1">
+                        <span className="block text-base text-gray-500 italic mt-1">
                           หมายเหตุ: {item.itemNote}
                         </span>
                       )}
