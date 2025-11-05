@@ -321,7 +321,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gray-100">
       <div className="bg-white shadow-md sticky top-0 z-40">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-4">
+          <div className="flex items-center gap-3 py-4">
             <div className="flex items-center gap-2">
               <Store className="text-orange-500" size={32} />
               <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
