@@ -79,7 +79,7 @@ const playNotificationSound = () => {
 };
 
 const AdminDashboard = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -337,13 +337,13 @@ const AdminDashboard = () => {
               >
                 {isShopOpen ? '🟢 ร้านเปิด' : '🔴 ร้านปิด'}
               </button>
-              <button
+              {/* <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 <LogOut size={18} />
                 ออกจากระบบ
-              </button>
+              </button> */}
             </div>
           </div>
 
