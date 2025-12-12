@@ -315,7 +315,7 @@ const AdminDashboard = () => {
     return orderDate === today;
   });
   const todayRevenue = todayOrders
-    .filter(o => o.status === 'accepted'|| o.status === 'ready')
+    .filter(o => o.status === 'accepted')
     .reduce((sum, order) => sum + (order.total || 0), 0);
   return (
     <div className="min-h-screen bg-gray-100">
@@ -606,7 +606,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
         <div className="flex flex-col gap-3">
           {/* Status Filter */}
           <div className="flex gap-2 flex-wrap justify-end">
-            {['all', 'pending', 'accepted', 'ready', 'rejected'].map(status => (
+            {['all', 'accepted', 'rejected'].map(status => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
@@ -617,9 +617,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
                 }`}
               >
                 {status === 'all' ? '📋 ทั้งหมด' :
-                status === 'pending' ? '⏳ รอดำเนินการ' :
-                status === 'accepted' ? '✅ ยืนยันแล้ว' :
-                status === 'ready' ? '🎉 พร้อมแล้ว' : '❌ ปฏิเสธ'}
+                status === 'accepted' ? '✅ ยืนยันแล้ว' : '❌ ยกเลิก'}
               </button>
             ))}
           </div>
@@ -821,23 +819,13 @@ const OrdersPage = ({ orders, loadOrders }) => {
 
               <button
                 onClick={() => {
-                  updateOrderStatus(selectedOrder.id, 'ready');
-                  setShowStatusModal(false);
-                }}
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
-              >
-                🎉 พร้อมส่ง/รับได้แล้ว
-              </button>
-
-              <button
-                onClick={() => {
                   updateOrderStatus(selectedOrder.id, 'rejected');
                   setShowStatusModal(false);
                 }}
                 className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
               >
                 <XCircle size={20} />
-                ปฏิเสธออเดอร์
+                ยกเลิกออเดอร์
               </button>
             </div>
           </div>
