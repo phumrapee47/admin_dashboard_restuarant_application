@@ -606,7 +606,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
         <div className="flex flex-col gap-3">
           {/* Status Filter */}
           <div className="flex gap-2 flex-wrap justify-end">
-            {['all', 'accepted', 'rejected'].map(status => (
+            {['all', 'pending', 'accepted', 'rejected'].map(status => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
@@ -617,6 +617,7 @@ const OrdersPage = ({ orders, loadOrders }) => {
                 }`}
               >
                 {status === 'all' ? '📋 ทั้งหมด' :
+                status === 'pending' ? '⏳ รอดำเนินการ' :
                 status === 'accepted' ? '✅ ยืนยันแล้ว' : '❌ ยกเลิก'}
               </button>
             ))}
